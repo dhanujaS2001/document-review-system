@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Document Review Dashboard</h2>
+
+       
+        <!-- Upload Button -->
+        <a href="{% url 'download_all_files' %}" class="btn btn-primary">
+            Download All
+        </a>
+    </div>
+
+    <table class="table table-bordered table-hover align-middle">
+
+        <thead class="table-dark">
+
+        <tr>
+
+            <th>Sl No</th>
+
+            <th>Project ID</th>
+
+            <th>Description</th>
+
+            <th>Given To</th>
+
+            <th>Action</th>
+
+        </tr>
+
+        </thead>
+
+        <tbody>
+
+        {% for project in approved_projects %}
+
+        <tr>
+
+            <td>{{ forloop.counter }}</td>
+
+            <td>{{ project.project_code }}</td>
+
+            <td>{{ project.review_description|default:"-" }}</td>
+
+            <td>{{ project.given_to|default:"-" }}</td>
+
+            <td>
+                <a href="{{ project.project_document.url }}"
+                   class="btn btn-sm btn-success"
+                   download>
+                    Download
+                </a>
+
+                <button class="btn btn-sm btn-warning edit-btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#editModal"
+                        data-id="{{ project.id }}"
+                        data-given_to="{{ project.given_to |default:''  }}">
+                    Edit
+                </button>
+            </td>
+
+        </tr>
+
+        {% empty %}
+
+        <tr>
+
+            <td colspan="9" class="text-center">
+
+                No Projects Available
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+
+<!-- Edit Modal -->
+ <div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <form method="POST"
+                  action="{% url 'update_given_to' %}"
+                  enctype="multipart/form-data">
+
+                {% csrf_token %}
+
+                <input type="hidden"
+                       id="edit_project_id"
+                       name="project_id">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Project Details
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label>Given To</label>
+
+                        <input id="edit_given_to"
+                                  name="given_to"
+                                  class="form-control"
+                                  rows="5"></input>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Close
+                    </button>
+
+                    <button class="btn btn-warning"
+                            type="submit">
+                        Update
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+
+document.querySelectorAll(".edit-btn").forEach(button => {
+
+    button.addEventListener("click", function(){
+
+        document.getElementById("edit_project_id").value =
+            this.dataset.id;
+
+
+        document.getElementById("edit_given_to").value =
+            this.dataset.given_to;
+    });
+
+});
+
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,515 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Document Review Dashboard</h2>
+
+        {% comment %} <a href="#" class="btn btn-primary">
+            Upload Project
+        </a> {% endcomment %}
+        <!-- Upload Button -->
+        <button class="btn btn-primary"
+                data-bs-toggle="modal"
+                data-bs-target="#uploadModal">
+            Upload Project
+        </button>
+    </div>
+
+    <table class="table table-bordered table-hover align-middle">
+
+        <thead class="table-dark">
+
+        <tr>
+
+            <th>Sl No</th>
+
+            <th>Project ID</th>
+
+            {% comment %} <th>Project Name</th> {% endcomment %}
+
+            <th>Uploaded By</th>
+
+            <th>Project Document</th>
+
+            <th>Review Document</th>
+
+            <th>Review Comments</th>
+
+            <th>Status</th>
+
+            <th>Action</th>
+
+        </tr>
+
+        </thead>
+
+        <tbody>
+
+        {% for project in projects %}
+
+        <tr>
+
+            <td>{{ forloop.counter }}</td>
+
+            <td>{{ project.project_code }}</td>
+
+            {% comment %} <td>{{ project.project_name }}</td> {% endcomment %}
+
+            <td>{{ project.uploaded_by.get_full_name }}</td>
+
+            <td>
+
+                <a href="{{ project.project_document.url }}"
+                   class="btn btn-sm btn-success"
+                   download>
+
+                    Download
+
+                </a>
+
+            </td>
+
+            <td>
+
+                {% if project.review_document %}
+
+                <a href="{{ project.review_document.url }}"
+                   class="btn btn-sm btn-info"
+                   download>
+
+                    Download
+
+                </a>
+
+                {% else %}
+
+                -
+
+                {% endif %}
+
+            </td>
+
+            <td>
+
+                {{ project.review_description|default:"-" }}
+
+            </td>
+
+            <td>
+
+                {% if project.status == "READY" %}
+
+                    <span class="badge bg-warning text-dark">
+                        Ready For Review
+                    </span>
+
+                {% elif project.status == "APPROVED" %}
+
+                    <span class="badge bg-success">
+                        Approved
+                    </span>
+
+                {% elif project.status == "REJECTED" %}
+
+                    <span class="badge bg-danger">
+                        Rejected
+                    </span>
+
+                {% elif project.status == "CHANGES" %}
+
+                    <span class="badge bg-primary">
+                        Needs Changes
+                    </span>
+
+                {% endif %}
+
+            </td>
+
+            <td>
+                <button class="btn btn-sm btn-primary review-btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#reviewModal"
+                        data-id="{{ project.id }}"
+                        data-code="{{ project.project_code }}"
+                        data-description="{{ project.review_description }}">
+                    Review
+                </button>
+
+                <button class="btn btn-sm btn-warning edit-btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#editModal"
+                        data-id="{{ project.id }}"
+                        data-name="{{ project.project_name }}"
+                        data-description="{{ project.description }}">
+                    Edit
+                </button>
+            </td>
+
+        </tr>
+
+        {% empty %}
+
+        <tr>
+
+            <td colspan="9" class="text-center">
+
+                No Projects Available
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+<!-- Upload Modal -->
+<div class="modal fade"
+     id="uploadModal"
+     tabindex="-1"
+     aria-labelledby="uploadModalLabel"
+     aria-hidden="true">
+
+    <div class="modal-dialog modal-lg">
+
+        <div class="modal-content">
+
+            <form method="POST"
+                  action="{% url 'upload_project' %}"
+                  enctype="multipart/form-data">
+
+                {% csrf_token %}
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title" id="uploadModalLabel">
+                        Upload Project Document
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                    </button>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <!-- Author -->
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Author
+                        </label>
+
+                        <select name="uploaded_by"
+                                class="form-select"
+                                required>
+
+                            <option value="">
+                                Select Author
+                            </option>
+                            
+
+                            {% for user in authors %}
+
+                                <option value="{{ user.id }}">
+                                    {{ user.get_full_name }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                    <!-- Project Name -->
+                    {% comment %} <div class="mb-3">
+
+                        <label class="form-label">
+                            Project Name
+                        </label>
+
+                        <input type="text"
+                               name="project_name"
+                               class="form-control"
+                               placeholder="Enter Project Name"
+                               required>
+
+                    </div> {% endcomment %}
+
+                    <!-- Description -->
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Description
+                        </label>
+
+                        <textarea name="description"
+                                  rows="5"
+                                  class="form-control"
+                                  placeholder="Enter project description..."></textarea>
+
+                    </div>
+
+                    <!-- File Upload -->
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Upload Document
+                        </label>
+
+                        <input type="file"
+                               name="project_document"
+                               class="form-control"
+                               accept=".doc,.docx"
+                               required>
+
+                        <small class="text-muted">
+                            Only Word (.doc/.docx) files are allowed.
+                        </small>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+
+                        Close
+
+                    </button>
+
+                    <button type="submit"
+                            class="btn btn-primary">
+
+                        Upload
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <form method="POST"
+                  action="{% url 'review_project' %}"
+                  enctype="multipart/form-data">
+
+                {% csrf_token %}
+
+                <input type="hidden"
+                       name="project_id"
+                       id="review_project_id">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Review Project
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label>Project Code</label>
+                        <input type="text"
+                               id="review_project_code"
+                               class="form-control"
+                               readonly>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Upload Review Document</label>
+                        <input type="file"
+                               name="review_document"
+                               class="form-control"
+                               accept=".doc,.docx">
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Review Comments</label>
+                        <textarea name="review_description"
+                                  class="form-control"
+                                  rows="5"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Status</label>
+
+                        <select name="status"
+                                class="form-select">
+
+                            <option value="APPROVED">
+                                Approved
+                            </option>
+
+                            <option value="REJECTED">
+                                Rejected
+                            </option>
+
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Close
+                    </button>
+
+                    <button class="btn btn-success"
+                            type="submit">
+                        Save Review
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+ <div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <form method="POST"
+                  action="{% url 're_upload_doc' %}"
+                  enctype="multipart/form-data">
+
+                {% csrf_token %}
+
+                <input type="hidden"
+                       id="edit_project_id"
+                       name="project_id">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        Edit Project
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                    </button>
+                </div>
+
+                <div class="modal-body">
+
+                    {% comment %} <div class="mb-3">
+                        <label>Project Name</label>
+
+                        <input type="text"
+                               id="edit_project_name"
+                               name="project_name"
+                               class="form-control">
+                    </div> {% endcomment %}
+
+                    <div class="mb-3">
+                        <label>Description</label>
+
+                        <textarea id="edit_description"
+                                  name="edit_description"
+                                  class="form-control"
+                                  rows="5"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Replace Document</label>
+
+                        <input type="file"
+                               name="project_document"
+                               class="form-control"
+                               accept=".doc,.docx">
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Close
+                    </button>
+
+                    <button class="btn btn-warning"
+                            type="submit">
+                        Update
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+
+document.querySelectorAll(".review-btn").forEach(button => {
+
+    button.addEventListener("click", function(){
+
+        document.getElementById("review_project_id").value =
+            this.dataset.id;
+
+        document.getElementById("review_project_code").value =
+            this.dataset.code;
+
+    });
+
+});
+
+
+document.querySelectorAll(".edit-btn").forEach(button => {
+
+    button.addEventListener("click", function(){
+
+        document.getElementById("edit_project_id").value =
+            this.dataset.id;
+
+        document.getElementById("edit_project_name").value =
+            this.dataset.name;
+
+        document.getElementById("edit_description").value =
+            this.dataset.description;
+
+    });
+
+});
+
+</script>
+
+{% endblock %}
