@@ -48,7 +48,7 @@ def upload_project(request):
                         f"Description: {description}"
                     ),
                     from_email=None,  # uses DEFAULT_FROM_EMAIL
-                    recipient_list=["dhanujashaji4554@gmail.com"],  
+                    recipient_list=["muhsinsulaiman689@gmail.com"],  
                     fail_silently=False,
                 )
             except Exception as e:
@@ -142,7 +142,7 @@ def re_upload_doc(request):
                         f"Description: {project.description}"
                     ),
                     from_email=None,  # uses DEFAULT_FROM_EMAIL
-                    recipient_list=["dhanujashaji4554@gmail.com"],  
+                    recipient_list=["muhsinsulaiman689@gmail.com"],  
                     fail_silently=False,
                 )
             except Exception as e:
