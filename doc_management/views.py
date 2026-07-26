@@ -38,18 +38,21 @@ def upload_project(request):
                 project_document=document,
                 uploaded_by=uploaded_user
             )
-            send_mail(
-                subject=f"New Project Uploaded: {project_code}",
-                message=(
-                    f"A new project has been uploaded.\n\n"
-                    f"Project Code: {project_code}\n"
-                    f"Uploaded By: {uploaded_user.get_full_name()}\n"
-                    f"Description: {description}"
-                ),
-                from_email=None,  # uses DEFAULT_FROM_EMAIL
-                recipient_list=["dhanujashaji4554@gmail.com"],  
-                fail_silently=True,
-            )
+            try:
+                send_mail(
+                    subject=f"New Project Uploaded: {project_code}",
+                    message=(
+                        f"A new project has been uploaded.\n\n"
+                        f"Project Code: {project_code}\n"
+                        f"Uploaded By: {uploaded_user.get_full_name()}\n"
+                        f"Description: {description}"
+                    ),
+                    from_email=None,  # uses DEFAULT_FROM_EMAIL
+                    recipient_list=["dhanujashaji4554@gmail.com"],  
+                    fail_silently=False,
+                )
+            except Exception as e:
+                print(request, f"Project uploaded but failed to send email: {e}")
             messages.success(request, f"Project {project_code} uploaded successfully.")
 
         except User.DoesNotExist:
@@ -77,29 +80,35 @@ def review_project(request):
             project.status = request.POST.get("status")
             project.save()
             if project.status == "APPROVED":
-                send_mail(
-                    subject=f"Project Approved: {project.project_code}",
-                    message=(
-                        f"Your project has been approved.\n\n"
-                        f"Project Code: {project.project_code}\n"
-                        f"Description: {project.description}"
-                    ),
-                    from_email=None,  # uses DEFAULT_FROM_EMAIL
-                    recipient_list=[project.uploaded_by.email],  
-                    fail_silently=True,
-                )
+                try:
+                    send_mail(
+                        subject=f"Project Approved: {project.project_code}",
+                        message=(
+                            f"Your project has been approved.\n\n"
+                            f"Project Code: {project.project_code}\n"
+                            f"Description: {project.description}"
+                        ),
+                        from_email=None,  # uses DEFAULT_FROM_EMAIL
+                        recipient_list=[project.uploaded_by.email],  
+                        fail_silently=False,
+                    )
+                except Exception as e:
+                    print(request, f"Project approved but failed to send email: {e}")
             else:
-                send_mail(
-                    subject=f"Review document of Project is Uploaded: {project.project_code}",
-                    message=(
-                        f"A Review document of Project has been uploaded.\n\n"
-                        f"Project Code: {project.project_code}\n"
-                        f"Description: {project.review_description}"
-                    ),
-                    from_email=None,  # uses DEFAULT_FROM_EMAIL
-                    recipient_list=[project.uploaded_by.email],  
-                    fail_silently=True,
-                )
+                try:
+                    send_mail(
+                        subject=f"Review document of Project is Uploaded: {project.project_code}",
+                        message=(
+                            f"A Review document of Project has been uploaded.\n\n"
+                            f"Project Code: {project.project_code}\n"
+                            f"Description: {project.review_description}"
+                        ),
+                        from_email=None,  # uses DEFAULT_FROM_EMAIL
+                        recipient_list=[project.uploaded_by.email],  
+                        fail_silently=False,
+                    )
+                except Exception as e:
+                    print(request, f"Review document uploaded but failed to send email: {e}")
                 messages.success(request, f"Review for {project.project_code} saved.")
 
         except Project.DoesNotExist:
@@ -123,18 +132,21 @@ def re_upload_doc(request):
             project.description = request.POST.get("edit_description")
             project.status = "READY"
             project.save()
-            send_mail(
-                subject=f"Updated version of Project Uploaded: {project.project_code}",
-                message=(
-                    f"A Updated version of Project has been uploaded.\n\n"
-                    f"Project Code: {project.project_code}\n"
-                    f"Uploaded By: {project.uploaded_by.get_full_name()}\n"
-                    f"Description: {project.description}"
-                ),
-                from_email=None,  # uses DEFAULT_FROM_EMAIL
-                recipient_list=["dhanujashaji4554@gmail.com"],  
-                fail_silently=True,
-            )
+            try:
+                send_mail(
+                    subject=f"Updated version of Project Uploaded: {project.project_code}",
+                    message=(
+                        f"A Updated version of Project has been uploaded.\n\n"
+                        f"Project Code: {project.project_code}\n"
+                        f"Uploaded By: {project.uploaded_by.get_full_name()}\n"
+                        f"Description: {project.description}"
+                    ),
+                    from_email=None,  # uses DEFAULT_FROM_EMAIL
+                    recipient_list=["dhanujashaji4554@gmail.com"],  
+                    fail_silently=False,
+                )
+            except Exception as e:
+                print(request, f"Project re-uploaded but failed to send email: {e}")
             messages.success(request, f"Project {project.project_code} updated.")
 
         except Project.DoesNotExist:
