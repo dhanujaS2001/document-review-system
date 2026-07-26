@@ -11,4 +11,5 @@ urlpatterns = [
     path("approved_dashboard/", views.approve_dashboard, name="approve_dashboard"),
     path("update_given_to/", views.update_given_to, name="update_given_to"),
     path("download-all-files/", views.download_all_files, name="download_all_files"),
+    path("download-ready-files/", views.download_all_ready_files, name="download_all_ready_files"),
 ]

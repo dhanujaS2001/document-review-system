@@ -76,18 +76,31 @@ def review_project(request):
             project.review_description = request.POST.get("review_description")
             project.status = request.POST.get("status")
             project.save()
-            send_mail(
-                subject=f"Review document of Project is Uploaded: {project.project_code}",
-                message=(
-                    f"A Review document of Project has been uploaded.\n\n"
-                    f"Project Code: {project.project_code}\n"
-                    f"Description: {project.review_description}"
-                ),
-                from_email=None,  # uses DEFAULT_FROM_EMAIL
-                recipient_list=[project.uploaded_by.email],  
-                fail_silently=True,
-            )
-            messages.success(request, f"Review for {project.project_code} saved.")
+            if project.status == "APPROVED":
+                send_mail(
+                    subject=f"Project Approved: {project.project_code}",
+                    message=(
+                        f"Your project has been approved.\n\n"
+                        f"Project Code: {project.project_code}\n"
+                        f"Description: {project.description}"
+                    ),
+                    from_email=None,  # uses DEFAULT_FROM_EMAIL
+                    recipient_list=[project.uploaded_by.email],  
+                    fail_silently=True,
+                )
+            else:
+                send_mail(
+                    subject=f"Review document of Project is Uploaded: {project.project_code}",
+                    message=(
+                        f"A Review document of Project has been uploaded.\n\n"
+                        f"Project Code: {project.project_code}\n"
+                        f"Description: {project.review_description}"
+                    ),
+                    from_email=None,  # uses DEFAULT_FROM_EMAIL
+                    recipient_list=[project.uploaded_by.email],  
+                    fail_silently=True,
+                )
+                messages.success(request, f"Review for {project.project_code} saved.")
 
         except Project.DoesNotExist:
             messages.error(request, "Project not found.")
@@ -163,9 +176,6 @@ def update_given_to(request):
 
     return redirect("approve_dashboard")
 
-
-
-
 def download_all_files(request):
     approved_projects = Project.objects.filter(status="APPROVED").order_by("-id")
 
@@ -194,3 +204,33 @@ def download_all_files(request):
     response["Content-Disposition"] = 'attachment; filename="Approved_Documents.zip"'
 
     return response
+
+def download_all_ready_files(request):
+    ready_projects = Project.objects.filter(status="READY").order_by("-id")
+
+    buffer = BytesIO()
+
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+
+        for project in ready_projects:
+
+            if project.project_document:
+                file_path = project.project_document.path
+
+                if os.path.exists(file_path):
+
+                    filename = os.path.basename(file_path)
+
+                    zip_file.write(file_path, arcname=filename)
+
+    buffer.seek(0)
+
+    response = HttpResponse(
+        buffer.getvalue(),
+        content_type="application/zip"
+    )
+
+    response["Content-Disposition"] = 'attachment; filename="Ready_Documents.zip"'
+
+    return response
+
