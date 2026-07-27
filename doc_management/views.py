@@ -10,7 +10,7 @@ from .models import Project,generate_project_code, replace_file
 
 
 def dashboard(request):
-    user = User.objects.all()
+    user = User.objects.filter(role="AUTHOR").order_by("-id")
     projects = Project.objects.exclude(status="APPROVED").order_by("-id")
 
     return render(
@@ -48,7 +48,7 @@ def upload_project(request):
                         f"Description: {description}"
                     ),
                     from_email=None,  # uses DEFAULT_FROM_EMAIL
-                    recipient_list=["muhsinsulaiman689@gmail.com"],  
+                    recipient_list=["muhsinsj633@gmail.com","Safestepsafety@gmail.com"],  
                     fail_silently=False,
                 )
             except Exception as e:
@@ -142,7 +142,7 @@ def re_upload_doc(request):
                         f"Description: {project.description}"
                     ),
                     from_email=None,  # uses DEFAULT_FROM_EMAIL
-                    recipient_list=["muhsinsulaiman689@gmail.com"],  
+                    recipient_list=["muhsinsj633@gmail.com","Safestepsafety@gmail.com"],  
                     fail_silently=False,
                 )
             except Exception as e:
