@@ -37,7 +37,46 @@
 
             {% comment %} <th>Project Name</th> {% endcomment %}
 
-            <th>Uploaded By</th>
+            <th>
+                <div class="d-flex align-items-center gap-1">
+                    <span>Uploaded By</span>
+
+                    <div class="dropdown">
+                        <button type="button"
+                                class="btn btn-dark btn-sm"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                                title="Filter by Uploaded By">
+                            <i class="bi bi-funnel-fill text-white"></i>
+                        </button>
+
+                        <ul class="dropdown-menu">
+
+                            <!-- All Authors -->
+                            <li>
+                                <a class="dropdown-item"
+                                href="{% url 'dashboard' %}">
+                                    All Authors
+                                </a>
+                            </li>
+
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+
+                            {% for author in authors %}
+                                <li>
+                                    <a class="dropdown-item"
+                                    href="?uploaded_by={{ author.id }}">
+                                        {{ author.get_full_name }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+
+                        </ul>
+                    </div>
+                </div>
+            </th>
 
             <th>Project Document</th>
 

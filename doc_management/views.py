@@ -13,6 +13,11 @@ def dashboard(request):
     user = User.objects.filter(role="AUTHOR").order_by("-id")
     projects = Project.objects.exclude(status="APPROVED").order_by("-id")
 
+    uploaded_by = request.GET.get("uploaded_by")
+
+    if uploaded_by:
+        projects = projects.filter(uploaded_by_id=uploaded_by)
+        
     return render(
         request,
         "dashboard.html",
@@ -160,11 +165,21 @@ def re_upload_doc(request):
 
 def approve_dashboard(request):
     approved_projects = Project.objects.filter(status="APPROVED").order_by("-id")
+    authors = User.objects.filter(role="AUTHOR").order_by("-id")
+
+    uploaded_by = request.GET.get("uploaded_by")
+
+    if uploaded_by:
+        approved_projects = approved_projects.filter(
+            uploaded_by_id=uploaded_by
+        )
+        
     return render(
         request,
         "approved_dashboard.html",
         context={
-            "approved_projects": approved_projects
+            "approved_projects": approved_projects,
+            "authors": authors,
         }
     )
     
@@ -174,9 +189,11 @@ def update_given_to(request):
         try:
             project_id = request.POST.get("project_id")
             given_to = request.POST.get("given_to")
+            leaner = request.POST.get("leaner_no")
 
             project = Project.objects.get(pk=project_id)
             project.given_to = given_to
+            project.leaner_no = leaner
             project.save()
 
             messages.success(request, f"Project {project.project_code} is Given To {project.given_to}.")

@@ -7,11 +7,18 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Approved Documents</h2>
 
-       
-        <!-- Upload Button -->
-        <a href="{% url 'download_all_files' %}" class="btn btn-primary">
-            Download All
-        </a>
+        <div class="d-flex gap-2">
+            <a href="#"
+               class="btn btn-success"
+               onclick="downloadExcel()">
+                <i class="bi bi-download"></i>
+            </a>
+
+            <!-- Upload Button -->
+            <a href="{% url 'download_all_files' %}" class="btn btn-primary">
+                Download All
+            </a>
+        </div>
     </div>
 
     <table class="table table-bordered table-hover align-middle">
@@ -22,11 +29,54 @@
 
             <th>Sl No</th>
 
-            <th>Project ID</th>
+            <th>
+                <div class="d-flex align-items-center gap-2">
+                    <span>Project ID</span>
 
+                    <div class="dropdown">
+                        <button type="button"
+                                class="btn btn-sm p-1"
+                                style="background-color: #212529; border: none;"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                                title="Filter by Uploaded By">
+
+                            <i class="bi bi-funnel-fill"
+                            style="color: white;"></i>
+
+                        </button>
+
+                        <ul class="dropdown-menu">
+
+                            <li>
+                                <a class="dropdown-item"
+                                href="{% url 'approve_dashboard' %}">
+                                    All
+                                </a>
+                            </li>
+
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+
+                            {% for author in authors %}
+                                <li>
+                                    <a class="dropdown-item"
+                                    href="?uploaded_by={{ author.id }}">
+                                        {{ author.get_full_name }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+
+                        </ul>
+                    </div>
+                </div>
+            </th>
             <th>Description</th>
 
             <th>Given To</th>
+
+            <th>Learner No</th>
 
             <th>Action</th>
 
@@ -48,6 +98,8 @@
 
             <td>{{ project.given_to|default:"-" }}</td>
 
+            <td>{{ project.leaner_no|default:"-" }}</td>
+
             <td>
                 <a href="{{ project.project_document.url }}"
                    class="btn btn-sm btn-success"
@@ -59,7 +111,8 @@
                         data-bs-toggle="modal"
                         data-bs-target="#editModal"
                         data-id="{{ project.id }}"
-                        data-given_to="{{ project.given_to |default:''  }}">
+                        data-given_to="{{ project.given_to |default:''  }}"
+                        data-leaner_no="{{ project.leaner_no |default:''  }}">
                     Edit
                 </button>
             </td>
@@ -70,7 +123,7 @@
 
         <tr>
 
-            <td colspan="9" class="text-center">
+            <td colspan="10" class="text-center">
 
                 No Projects Available
 
@@ -123,6 +176,15 @@
                                   rows="5"></input>
                     </div>
 
+                    <div class="mb-3">
+                        <label>Learner No</label>
+
+                        <input id="edit_leaner_no"
+                                  name="leaner_no"
+                                  class="form-control"
+                                  rows="5"></input>
+                    </div>
+
                 </div>
 
                 <div class="modal-footer">
@@ -158,9 +220,76 @@ document.querySelectorAll(".edit-btn").forEach(button => {
 
         document.getElementById("edit_given_to").value =
             this.dataset.given_to;
+
+        document.getElementById("edit_leaner_no").value =
+            this.dataset.leaner_no;
     });
 
 });
+
+function downloadExcel() {
+
+    const table = document.querySelector("table");
+
+    const rows = table.querySelectorAll("tbody tr");
+
+    const data = [];
+
+    // Excel headings
+    data.push([
+        "Project ID",
+        "Given To",
+        "Learner No"
+    ]);
+
+    rows.forEach(row => {
+
+        const cells = row.querySelectorAll("td");
+
+        // Skip "No Projects Available" row
+        if (cells.length < 6) {
+            return;
+        }
+
+        data.push([
+            cells[1].innerText.trim(), // Project ID
+            cells[3].innerText.trim(), // Given To
+            cells[4].innerText.trim()  // Learner No
+        ]);
+    });
+
+    // Current date
+    const today = new Date();
+
+    let targetDate = new Date(today);
+
+    // 18th onwards -> next month
+    if (today.getDate() >= 18) {
+        targetDate.setMonth(targetDate.getMonth() + 1);
+    }
+
+    const monthName = targetDate.toLocaleString("en-US", {
+        month: "long"
+    });
+
+    const year = targetDate.getFullYear();
+
+    const fileName = `${monthName} ${year}.xlsx`;
+
+    // Create workbook
+    const worksheet = XLSX.utils.aoa_to_sheet(data);
+
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+        workbook,
+        worksheet,
+        "Approved Documents"
+    );
+
+    // Download
+    XLSX.writeFile(workbook, fileName);
+}
 
 </script>
 

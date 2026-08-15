@@ -105,6 +105,10 @@ class Project(models.Model):
         null=True,
         help_text="Name of the student the approved project was given to"
     )
+    leaner_no = models.CharField(max_length=200,
+            blank=True,
+            null=True)
+    
 
     def __str__(self):
         return self.project_code
