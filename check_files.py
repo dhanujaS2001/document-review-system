@@ -32,6 +32,6 @@ for o in orphans:
 print(f"\nTotal orphans: {len(orphans)}")
 
 # ---------- STEP 3: delete orphans (commented out on purpose) ----------
-# for o in orphans:
-#     os.remove(o)
-#     print("Deleted:", o)
+for o in orphans:
+    os.remove(o)
+    print("Deleted:", o)
